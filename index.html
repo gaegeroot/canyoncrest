@@ -20,7 +20,7 @@
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to content</a>
@@ -1029,15 +1029,27 @@
                 <form id="consultForm" novalidate>
                   <div class="field-row">
                     <div class="field">
-                      <label for="fname">Full Name</label
+                      <label for="ffirstname">First Name</label
                       ><input
                         type="text"
-                        id="fname"
-                        name="fname"
+                        id="ffirstname"
+                        name="ffirstname"
                         required
-                        autocomplete="name"
+                        autocomplete="given-name"
                       />
                     </div>
+                    <div class="field">
+                      <label for="flastname">Last Name</label
+                      ><input
+                        type="text"
+                        id="flastname"
+                        name="flastname"
+                        required
+                        autocomplete="family-name"
+                      />
+                    </div>
+                  </div>
+                  <div class="field-row">
                     <div class="field">
                       <label for="fphone">Phone</label
                       ><input
@@ -1046,10 +1058,11 @@
                         name="fphone"
                         required
                         autocomplete="tel"
+                        placeholder="(520) 249-9984"
+                        maxlength="14"
+                        inputmode="numeric"
                       />
                     </div>
-                  </div>
-                  <div class="field-row">
                     <div class="field">
                       <label for="femail">Email</label
                       ><input
@@ -1060,16 +1073,37 @@
                         autocomplete="email"
                       />
                     </div>
-                    <div class="field">
-                      <label for="flocation">Property Location</label
-                      ><input
-                        type="text"
-                        id="flocation"
-                        name="flocation"
-                        placeholder="City, State"
-                        required
-                      />
-                    </div>
+                  </div>
+                  <div class="field field--full">
+                    <label for="flocation-visible">Property Location</label>
+                    <gmp-place-autocomplete
+                      id="flocation-visible"
+                      name="flocation"
+                      placeholder="Start typing your address..."
+                      no-clear-button
+                      included-region-codes="us"
+                      class="place-autocomplete-input"
+                      color-scheme="light"
+                    >
+                      <span
+                        slot="clear-icon"
+                        class="location-clear-btn"
+                        aria-label="Clear address"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                        >
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </span>
+                    </gmp-place-autocomplete>
                   </div>
                   <div class="field-row">
                     <div class="field">
@@ -1088,6 +1122,7 @@
                         <option value="" disabled selected>
                           Select service
                         </option>
+                        <option>General Maintenance</option>
                         <option>Desert Landscaping</option>
                         <option>Landscape Design</option>
                         <option>Hardscaping</option>
@@ -1102,7 +1137,8 @@
                     </div>
                   </div>
                   <div class="field">
-                    <label for="fmessage">Tell us about your vision</label
+                    <label for="fmessage"
+                      >Let us know what you'd like us to help with</label
                     ><textarea
                       id="fmessage"
                       name="fmessage"
@@ -1226,22 +1262,46 @@
     </div>
 
     <script>
-      (function () {
+      document.addEventListener("DOMContentLoaded", () => {
         "use strict";
-        var nav = document.getElementById("siteNav");
 
         const WEBHOOK_URL =
           "https://hook.us2.make.com/6nh9ekmppp476gjeoftt8ct713rncrm4";
 
+        var nav = document.getElementById("siteNav");
+        var menu = document.getElementById("mobileMenu");
+        var openBtn = document.getElementById("menuOpen");
+        var closeBtn = document.getElementById("menuClose");
+        var stickyCta = document.getElementById("stickyCta");
+        var stickyClose = document.getElementById("stickyClose");
+        var stickyDismissed = false;
+        var heroEl = document.querySelector(".hero");
+        var contactEl = document.getElementById("contact");
+
+        // --- Phone formatting ---
+        document
+          .getElementById("fphone")
+          .addEventListener("input", function (e) {
+            let digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+            let formatted = digits;
+            if (digits.length > 6) {
+              formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+            } else if (digits.length > 3) {
+              formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+            } else if (digits.length > 0) {
+              formatted = `(${digits}`;
+            }
+            e.target.value = formatted;
+          });
+
+        // --- Sticky nav shadow ---
         function onScroll() {
           nav.classList.toggle("is-scrolled", window.scrollY > 40);
         }
         window.addEventListener("scroll", onScroll, { passive: true });
         onScroll();
 
-        var menu = document.getElementById("mobileMenu");
-        var openBtn = document.getElementById("menuOpen");
-        var closeBtn = document.getElementById("menuClose");
+        // --- Mobile menu ---
         function openMenu() {
           menu.classList.add("is-open");
           openBtn.setAttribute("aria-expanded", "true");
@@ -1260,6 +1320,7 @@
           s.style.scrollMarginTop = "84px";
         });
 
+        // --- Scroll reveal ---
         var reduceMotion = window.matchMedia(
           "(prefers-reduced-motion: reduce)",
         ).matches;
@@ -1285,11 +1346,7 @@
           });
         }
 
-        var stickyCta = document.getElementById("stickyCta");
-        var stickyClose = document.getElementById("stickyClose");
-        var stickyDismissed = false;
-        var heroEl = document.querySelector(".hero");
-        var contactEl = document.getElementById("contact");
+        // --- Sticky CTA visibility ---
         function updateSticky() {
           if (stickyDismissed) return;
           var heroBottom = heroEl.getBoundingClientRect().bottom;
@@ -1307,18 +1364,35 @@
           stickyCta.classList.remove("is-visible");
         });
 
+        // --- Form submission ---
         var form = document.getElementById("consultForm");
-        var confirmBlock = document.getElementById("confirmBlock");
 
         form.addEventListener("submit", async (e) => {
           e.preventDefault();
+
+          // Basic phone sanity check (10 digits) since the format mask
+          // alone doesn't guarantee a complete number
+          var phoneDigits = form.fphone.value.replace(/\D/g, "");
+          if (phoneDigits.length !== 10) {
+            form.fphone.setCustomValidity(
+              "Please enter a complete 10-digit phone number.",
+            );
+            form.fphone.reportValidity();
+            return;
+          }
+          form.fphone.setCustomValidity("");
 
           const submitButton = form.querySelector('button[type="submit"]');
           submitButton.disabled = true;
           submitButton.textContent = "Sending...";
 
+          const firstName = form.ffirstname.value.trim();
+          const lastName = form.flastname.value.trim();
+
           const data = {
-            name: form.fname.value,
+            firstName: firstName,
+            lastName: lastName,
+            name: `${firstName} ${lastName}`.trim(),
             phone: form.fphone.value,
             email: form.femail.value,
             location: form.flocation.value,
@@ -1342,17 +1416,23 @@
               throw new Error("Webhook request failed");
             }
 
-            form.outerHTML = `
-        <div class="form-success">
-          <div class="form-success__icon">✓</div>
-          <h3>Thank You</h3>
-          <p>
-            Your estimate request has been received.
-            A member of our team will review your project details and
-            contact you within one business day.
-          </p>
-        </div>
-      `;
+            var successHtml = `
+          <div class="form-success" tabindex="-1" role="status">
+            <div class="form-success__icon">✓</div>
+            <h3>Thank You</h3>
+            <p>
+              Your estimate request has been received.
+              A member of our team will review your project details and
+              contact you within one business day.
+            </p>
+          </div>
+        `;
+            form.outerHTML = successHtml;
+
+            // Move focus to the confirmation so screen reader users
+            // are notified the form was replaced
+            var successEl = document.querySelector(".form-success");
+            if (successEl) successEl.focus();
           } catch (error) {
             console.error(error);
 
@@ -1364,7 +1444,26 @@
             );
           }
         });
-      })();
+      });
+
+      // --- Google Places Autocomplete ---
+      // Defined in global scope so the Maps script's callback param can find it
+
+      function initAutocomplete() {
+        const el = document.getElementById("flocation-visible");
+        if (!el) return;
+
+        el.addEventListener("gmp-select", async ({ placePrediction }) => {
+          const place = placePrediction.toPlace();
+          await place.fetchFields({ fields: ["formattedAddress"] });
+          el.value = place.formattedAddress || el.value;
+        });
+      }
     </script>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBja16ZB97PBDnQ8yfAkdsQa5KeTMc5LKQ&libraries=places&loading=async&callback=initAutocomplete"
+      defer
+    ></script>
   </body>
 </html>
